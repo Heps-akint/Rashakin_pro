@@ -1,0 +1,6 @@
+@echo off
+echo Installing Tailwind CSS and dependencies...
+call npm install --save-dev tailwindcss@^3.3.0 postcss@^8.4.31 autoprefixer@^10.4.14
+echo Creating Tailwind config files...
+npx tailwindcss init -p
+echo Done! 

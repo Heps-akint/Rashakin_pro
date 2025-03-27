@@ -1,0 +1,13 @@
+---
+description: This is the project's tech satck
+globs: 
+alwaysApply: false
+---
+
+# Technical Stack
+
+- Frontend: Next.js with Tailwind CSS
+- Backend: Next.js API Routes (with potential Express.js if needed)
+- Database & Auth: Supabase (PostgreSQL and Auth)
+- Payment: Stripe integration via Node.js SDK
+- Hosting/DevOps: Vercel (for the app) and GitHub (for version control & CI/CD)
