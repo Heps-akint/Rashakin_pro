@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useCart, CartItem } from '@/app/lib/cart-context';
+import { useCart } from '@/app/lib/cart-context';
+import { CartItem } from '@/app/lib/types';
 
 interface CartItemComponentProps {
   item: CartItem;
@@ -13,12 +14,12 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
   
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1) {
-      updateItemQuantity(item.id, newQuantity);
+      updateItemQuantity(item.id, newQuantity, item.size, item.color);
     }
   };
   
   const handleRemove = () => {
-    removeItem(item.id);
+    removeItem(item.id, item.size, item.color);
   };
   
   // Format price
@@ -42,6 +43,7 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
             <div 
               className="w-full h-full bg-center bg-cover" 
               style={{ backgroundImage: `url(${item.image})` }}
+              aria-label={`Image of ${item.name}`}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">
@@ -76,6 +78,7 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
                 <span 
                   className="ml-1 w-3 h-3 rounded-full border border-gray-300 inline-block"
                   style={{ backgroundColor: item.color.toLowerCase() }}
+                  aria-label={`Color: ${item.color}`}
                 ></span>
                 {item.color}
               </span>
@@ -91,6 +94,7 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
               onClick={() => handleQuantityChange(item.quantity - 1)}
               className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100"
               disabled={item.quantity <= 1}
+              aria-label="Decrease quantity"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
@@ -102,6 +106,7 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
             <button
               onClick={() => handleQuantityChange(item.quantity + 1)}
               className="w-7 h-7 flex items-center justify-center text-gray-600 hover:bg-gray-100"
+              aria-label="Increase quantity"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -113,6 +118,7 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
           <button
             onClick={handleRemove}
             className="ml-3 text-xs text-red-600 hover:text-red-800"
+            aria-label="Remove item"
           >
             Remove
           </button>
@@ -122,4 +128,4 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
   );
 };
 
-export default CartItemComponent; 
+export default CartItemComponent;

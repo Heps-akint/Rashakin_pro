@@ -1,7 +1,73 @@
+"use client";
+
 import React from 'react';
 import Link from 'next/link';
+import { useCart } from './lib/cart-context';
+import { Product } from './lib/types';
 
 export default function HomePage() {
+  const { addItem } = useCart();
+
+  // Sample products data
+  const newArrivals: Product[] = [
+    { 
+      id: 1, 
+      name: 'Serene Silk Blouse', 
+      price: 129.99, 
+      category: 'Tops', 
+      images: ['/products/silk-blouse.jpg'],
+      description: 'Elegant silk blouse with a relaxed fit, perfect for any occasion',
+      sizes: ['XS', 'S', 'M', 'L', 'XL'],
+      colors: ['White', 'Ivory', 'Black'],
+      stock_quantity: 25,
+      tags: ['silk', 'blouse', 'luxury'],
+      created_at: '2025-01-15T00:00:00Z',
+      updated_at: '2025-01-15T00:00:00Z'
+    },
+    { 
+      id: 2, 
+      name: 'Meridian Maxi Dress', 
+      price: 189.99, 
+      category: 'Dresses', 
+      images: ['/products/maxi-dress.jpg'],
+      description: 'Flowing maxi dress with an elegant silhouette and feminine details',
+      sizes: ['XS', 'S', 'M', 'L', 'XL'],
+      colors: ['Navy', 'Emerald', 'Black'],
+      stock_quantity: 18,
+      tags: ['dress', 'maxi', 'evening'],
+      created_at: '2025-01-20T00:00:00Z',
+      updated_at: '2025-01-20T00:00:00Z'
+    },
+    { 
+      id: 3, 
+      name: 'Cascade Linen Pants', 
+      price: 149.99, 
+      category: 'Pants', 
+      images: ['/products/linen-pants.jpg'],
+      description: 'Breathable linen pants with a wide-leg cut for ultimate comfort',
+      sizes: ['XS', 'S', 'M', 'L', 'XL'],
+      colors: ['Beige', 'White', 'Sage'],
+      stock_quantity: 22,
+      tags: ['pants', 'linen', 'summer'],
+      created_at: '2025-02-05T00:00:00Z',
+      updated_at: '2025-02-05T00:00:00Z'
+    },
+    { 
+      id: 4, 
+      name: 'Aurora Evening Gown', 
+      price: 249.99, 
+      category: 'Dresses', 
+      images: ['/products/evening-gown.jpg'],
+      description: 'Stunning evening gown with intricate detailing and a flattering cut',
+      sizes: ['XS', 'S', 'M', 'L', 'XL'],
+      colors: ['Midnight Blue', 'Burgundy', 'Black'],
+      stock_quantity: 15,
+      tags: ['gown', 'evening', 'formal'],
+      created_at: '2025-02-10T00:00:00Z',
+      updated_at: '2025-02-10T00:00:00Z'
+    }
+  ];
+
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
@@ -57,12 +123,7 @@ export default function HomePage() {
           <h2 className="text-3xl font-serif font-bold text-center mb-3">Spring Collection 2025</h2>
           <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">Introducing our latest designs that capture the essence of the season</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { name: 'Serene Silk Blouse', price: '£129.99', category: 'Tops' },
-              { name: 'Meridian Maxi Dress', price: '£189.99', category: 'Dresses' },
-              { name: 'Cascade Linen Pants', price: '£149.99', category: 'Pants' },
-              { name: 'Aurora Evening Gown', price: '£249.99', category: 'Dresses' }
-            ].map((product, idx) => (
+            {newArrivals.map((product, idx) => (
               <div key={idx} className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
                 <div className={`aspect-[4/5] bg-[#f0f0f0] relative overflow-hidden`}>
                   <div className="absolute top-0 right-0 bg-secondary text-white px-3 py-1 text-sm font-medium">
@@ -74,8 +135,11 @@ export default function HomePage() {
                   <h3 className="font-medium text-lg mb-1">{product.name}</h3>
                   <p className="text-gray-500 text-sm mb-3">{product.category}</p>
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-lg">{product.price}</span>
-                    <button className="text-primary hover:text-primary/80 font-medium transition-colors duration-200">
+                    <span className="font-bold text-lg">{`£${product.price}`}</span>
+                    <button 
+                      onClick={() => addItem(product, 1)}
+                      className="text-primary hover:text-primary/80 font-medium transition-colors duration-200"
+                    >
                       Add to cart
                     </button>
                   </div>

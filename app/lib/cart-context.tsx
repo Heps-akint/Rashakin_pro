@@ -1,25 +1,14 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Product } from './types';
-
-// Define the cart item type
-export interface CartItem {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  quantity: number;
-  size?: string;
-  color?: string;
-}
+import { Product, CartItem } from './types';
 
 // Define the cart context type
 interface CartContextType {
   items: CartItem[];
   addItem: (product: Product, quantity: number, size?: string, color?: string) => void;
-  updateItemQuantity: (id: number, quantity: number) => void;
-  removeItem: (id: number) => void;
+  updateItemQuantity: (id: number, quantity: number, size?: string, color?: string) => void;
+  removeItem: (id: number, size?: string, color?: string) => void;
   clearCart: () => void;
   isCartOpen: boolean;
   openCart: () => void;
@@ -51,6 +40,8 @@ export function CartProvider({ children }: CartProviderProps) {
         setItems(JSON.parse(savedCart));
       } catch (error) {
         console.error('Error parsing cart from localStorage:', error);
+        // Clear corrupted data
+        localStorage.removeItem('rashakinCart');
       }
     }
   }, []);
@@ -89,6 +80,7 @@ export function CartProvider({ children }: CartProviderProps) {
           quantity,
           size,
           color,
+          product, // Store the full product for reference
         }];
       }
     });
@@ -98,17 +90,24 @@ export function CartProvider({ children }: CartProviderProps) {
   };
   
   // Update the quantity of an item
-  const updateItemQuantity = (id: number, quantity: number) => {
+  const updateItemQuantity = (id: number, quantity: number, size?: string, color?: string) => {
+    if (quantity <= 0) {
+      removeItem(id, size, color);
+      return;
+    }
+    
     setItems(prevItems => 
       prevItems.map(item => 
-        item.id === id ? { ...item, quantity } : item
+        item.id === id && item.size === size && item.color === color ? { ...item, quantity } : item
       )
     );
   };
   
   // Remove an item from the cart
-  const removeItem = (id: number) => {
-    setItems(prevItems => prevItems.filter(item => item.id !== id));
+  const removeItem = (id: number, size?: string, color?: string) => {
+    setItems(prevItems => prevItems.filter(item => 
+      !(item.id === id && item.size === size && item.color === color)
+    ));
   };
   
   // Clear all items from the cart
@@ -153,4 +152,4 @@ export function useCart() {
     throw new Error('useCart must be used within a CartProvider');
   }
   return context;
-} 
+}

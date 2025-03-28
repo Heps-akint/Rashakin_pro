@@ -14,6 +14,18 @@ export interface Product {
   updated_at: string;
 }
 
+// Cart interfaces
+export interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+  size?: string;
+  color?: string;
+  product: Product;
+}
+
 // Order interfaces
 export enum OrderStatus {
   Pending = 'Pending',
@@ -94,4 +106,4 @@ export interface Wishlist {
   product_ids: number[];
   created_at: string;
   updated_at: string;
-} 
+}

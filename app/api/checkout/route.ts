@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { CartItem } from '@/app/lib/cart-context';
+import { CartItem } from '@/app/lib/types';
 
 // Initialize Stripe with the secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
@@ -20,13 +20,28 @@ export async function POST(request: NextRequest) {
     
     // Create a list of line items for Stripe
     const lineItems = items.map((item: CartItem) => {
+      // Convert relative image path to absolute URL
+      const imageUrl = item.image 
+        ? item.image.startsWith('http') 
+          ? item.image 
+          : `${process.env.NEXT_PUBLIC_BASE_URL}${item.image}` 
+        : null;
+
+      // Format variant information
+      const variantInfo = [];
+      if (item.size) variantInfo.push(`Size: ${item.size}`);
+      if (item.color) variantInfo.push(`Color: ${item.color}`);
+      const variantDescription = variantInfo.length > 0 
+        ? variantInfo.join(', ')
+        : 'Standard';
+
       return {
         price_data: {
           currency: 'gbp',
           product_data: {
             name: item.name,
-            description: `Size: ${item.size || 'N/A'}, Color: ${item.color || 'N/A'}`,
-            images: item.image ? [item.image] : [],
+            description: variantDescription,
+            images: imageUrl ? [imageUrl] : [],
           },
           unit_amount: Math.round(item.price * 100), // Stripe requires amount in pennies
         },
@@ -102,4 +117,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
