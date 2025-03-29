@@ -65,9 +65,9 @@ export interface Order {
   customer_name: string | null;
   customer_email: string | null;
   customer_phone: string | null;
-  status: string;
+  status: OrderStatus;
   total_amount: number;
-  payment_status: string;
+  payment_status: PaymentStatus;
   shipping_address: Address;
   billing_address: Address;
   order_items: OrderItem[];

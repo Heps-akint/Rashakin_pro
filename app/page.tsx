@@ -125,11 +125,19 @@ export default function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {newArrivals.map((product, idx) => (
               <div key={idx} className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
-                <div className={`aspect-[4/5] bg-[#f0f0f0] relative overflow-hidden`}>
+                <div className={`aspect-[4/5] bg-gray-100 relative overflow-hidden`}>
+                  {product.images?.[0] ? (
+                    <div 
+                      className="absolute inset-0 bg-center bg-cover transition-transform duration-300 group-hover:scale-105"
+                      style={{ backgroundImage: `url(${product.images[0]})` }}
+                      aria-label={`Image of ${product.name}`}
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">No Image</div>
+                  )}
                   <div className="absolute top-0 right-0 bg-secondary text-white px-3 py-1 text-sm font-medium">
                     New
                   </div>
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300"></div>
                 </div>
                 <div className="p-5">
                   <h3 className="font-medium text-lg mb-1">{product.name}</h3>

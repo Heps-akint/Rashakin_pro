@@ -43,7 +43,7 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
             <div 
               className="w-full h-full bg-center bg-cover" 
               style={{ backgroundImage: `url(${item.image})` }}
-              aria-label={`Image of ${item.name}`}
+              aria-label={`Product image of ${item.name}`}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">
