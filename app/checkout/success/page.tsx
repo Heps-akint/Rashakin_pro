@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { useCart } from '@/app/lib/cart-context';
 
 interface OrderData {
   id: number;
@@ -20,6 +21,7 @@ interface OrderData {
 export default function SuccessPage() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get('session_id');
+  const { clearCart } = useCart();
   
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +44,7 @@ export default function SuccessPage() {
         }
         
         setOrderData(data.order);
+        clearCart();
       } catch (err) {
         console.error('Error verifying payment:', err);
         setError('Unable to verify payment status');

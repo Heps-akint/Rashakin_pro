@@ -3,8 +3,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import AddToCartButton from './AddToCartButton';
 import ProductCard from '@/app/components/ui/ProductCard';
+import ProductInteraction from './ProductInteraction';
 import { Product } from '@/app/lib/types';
 
 // Metadata
@@ -108,63 +108,9 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
               <p>{product.description}</p>
             </div>
             
-            {/* Sizes */}
-            {product.sizes && product.sizes.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Size</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.sizes.map((size: string) => (
-                    <button 
-                      key={size}
-                      className="px-3 py-1 border border-gray-300 rounded-md text-sm hover:border-primary hover:text-primary focus:outline-none focus:ring-2 focus:ring-primary"
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Colors */}
-            {product.colors && product.colors.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Color</h3>
-                <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color: string) => (
-                    <button 
-                      key={color}
-                      className="h-8 w-8 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                      style={{ backgroundColor: color.toLowerCase() }}
-                      title={color}
-                    />
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Stock status */}
-            <div className="mb-6">
-              <p className={`text-sm ${product.stock_quantity > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {product.stock_quantity > 0 
-                  ? `In Stock (${product.stock_quantity} available)` 
-                  : 'Out of Stock'}
-              </p>
-            </div>
-            
-            {/* Add to cart button */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <AddToCartButton product={product} />
-              
-              <button 
-                className="px-4 py-2 border border-gray-300 rounded-md flex items-center justify-center text-gray-700 hover:bg-gray-50"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
-                Add to Wishlist
-              </button>
-            </div>
-            
+            {/* Replace static variant selection and AddToCartButton with the client component */}
+            <ProductInteraction product={product} />
+
             {/* Product meta */}
             <div className="mt-8 pt-6 border-t border-gray-200">
               <div className="flex flex-col gap-2 text-sm text-gray-600">

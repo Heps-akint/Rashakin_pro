@@ -27,7 +27,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product, 1);
+    // Add with default variants if available
+    const defaultSize = product.sizes?.[0];
+    const defaultColor = product.colors?.[0];
+    addItem(product, 1, defaultSize ?? undefined, defaultColor ?? undefined);
   };
   
   return (

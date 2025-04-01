@@ -113,8 +113,6 @@ export default function CheckoutPage() {
       
       // Redirect to Stripe checkout
       if (data.url) {
-        // Clear the cart after successful checkout (could also do this on success page)
-        clearCart();
         // Redirect to Stripe checkout page
         window.location.href = data.url;
       } else {
