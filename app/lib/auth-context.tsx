@@ -2,7 +2,8 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import supabase from './supabase';
+import { createClient } from '@/app/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
@@ -29,6 +30,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     // Get initial session
@@ -36,8 +39,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data, error } = await supabase.auth.getSession();
       
       if (data.session) {
+        console.log("AuthProvider Initial Session:", data.session);
         setSession(data.session);
         setUser(data.session.user);
+      } else {
+        console.log("AuthProvider Initial Session: None");
       }
       
       setIsLoading(false);
@@ -45,12 +51,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    // Set up auth state listener
+    // Set up auth state listener using the browser client
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("AuthProvider Auth State Change:", event, session);
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
+
+        // Refresh the page after sign-in/sign-out to ensure server components
+        // get the latest auth state via middleware.
+        if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
+          router.refresh();
+        }
       }
     );
 
@@ -104,9 +117,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { data, error };
   };
 
-  // Sign out
+  // Sign out the user
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Auth state listener and router.refresh() will handle the rest
   };
 
   // Reset password
@@ -138,4 +152,4 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-} 
+}

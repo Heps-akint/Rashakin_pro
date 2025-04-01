@@ -1,20 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { cookies } from 'next/headers';
+import { createClient } from '@/app/lib/supabase/server';
 
 // Initialize Stripe with the secret key
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2022-11-15',
 });
 
-// Initialize Supabase
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-);
-
 export async function GET(request: NextRequest) {
   try {
+    // Create a Supabase client specific to this route handler
+    const cookieStore = cookies();
+    const supabase = createClient();
+
+    // Get the logged-in user (if any)
+    const { data: { user } } = await supabase.auth.getUser();
+
     const searchParams = request.nextUrl.searchParams;
     const sessionId = searchParams.get('session_id');
 
@@ -75,11 +77,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Create order record in Supabase
-    const userId = null; // For guest checkout, or get from session if authenticated
+    const customerIdToInsert = user?.id || null;
+
     const { data: order, error } = await supabase
       .from('orders')
       .insert([{
-        customer_id: userId, // Null for guests
+        customer_id: customerIdToInsert,
         status: 'Pending',
         total_amount: session.amount_total ? session.amount_total / 100 : 0,
         shipping_address: shippingAddress,
