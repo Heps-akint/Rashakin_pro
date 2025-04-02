@@ -84,9 +84,6 @@ export function CartProvider({ children }: CartProviderProps) {
         }];
       }
     });
-    
-    // Open the cart when an item is added
-    setIsCartOpen(true);
   };
   
   // Update the quantity of an item

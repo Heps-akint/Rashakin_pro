@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { createClient } from '@/app/lib/supabase/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 type AuthContextType = {
   user: User | null;
@@ -32,6 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const supabase = createClient();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     // Get initial session
