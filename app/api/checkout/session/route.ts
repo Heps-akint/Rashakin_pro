@@ -2,20 +2,43 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { cookies } from 'next/headers';
 import { createClient } from '@/app/lib/supabase/server';
+import { OrderStatus, PaymentStatus, OrderItem, Address } from '@/app/lib/types';
 
-// Initialize Stripe with the secret key
+// Initialize Stripe with the secret key and proper typing
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2022-11-15',
 });
 
-export async function GET(request: NextRequest) {
+/**
+ * Response structure for checkout session verification
+ */
+interface CheckoutResponse {
+  success?: boolean;
+  error?: string;
+  order?: {
+    id: number;
+    total: number;
+    items: OrderItem[];
+    shipping: Stripe.Checkout.Session.ShippingDetails | null;
+  };
+}
+
+/**
+ * Retrieves and processes a Stripe checkout session 
+ * Creates an order record in the database if payment was successful
+ */
+export async function GET(request: NextRequest): Promise<NextResponse<CheckoutResponse>> {
   try {
-    // Create a Supabase client specific to this route handler
-    const cookieStore = cookies();
+    // Create a Supabase client
     const supabase = createClient();
 
     // Get the logged-in user (if any)
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.warn('Auth error during checkout verification:', userError.message);
+      // Continue anyway - we can create orders for non-logged in users
+    }
 
     const searchParams = request.nextUrl.searchParams;
     const sessionId = searchParams.get('session_id');
@@ -46,7 +69,7 @@ export async function GET(request: NextRequest) {
 
     // Extract shipping details from the session
     const shippingDetails = session.shipping_details;
-    const shippingAddress = shippingDetails?.address
+    const shippingAddress: Address | null = shippingDetails?.address
       ? {
           street: [
             shippingDetails.address.line1,
@@ -59,13 +82,20 @@ export async function GET(request: NextRequest) {
         }
       : null;
 
+    if (!shippingAddress) {
+      return NextResponse.json(
+        { error: 'Missing shipping information' },
+        { status: 400 }
+      );
+    }
+
     // Format line items from Stripe into order items
     const lineItems = session.line_items?.data || [];
-    const orderItems = lineItems.map(item => {
+    const orderItems: OrderItem[] = lineItems.map(item => {
       // Extract product details from description (we stored size & color there)
       const description = item.description || '';
-      const sizeMatch = description.match(/Size: (.+?),/);
-      const colorMatch = description.match(/Color: (.+?)$/);
+      const sizeMatch = description.match(/Size: ([^,]+),?/);
+      const colorMatch = description.match(/Color: ([^,]+)$/);
       
       return {
         product_name: item.description?.split(',')[0] || '',
@@ -83,11 +113,11 @@ export async function GET(request: NextRequest) {
       .from('orders')
       .insert([{
         customer_id: customerIdToInsert,
-        status: 'Pending',
+        status: OrderStatus.Pending,
         total_amount: session.amount_total ? session.amount_total / 100 : 0,
         shipping_address: shippingAddress,
         billing_address: shippingAddress, // Use same address for billing in this case
-        payment_status: 'Paid',
+        payment_status: PaymentStatus.Paid,
         order_items: orderItems,
         stripe_session_id: session.id,
         stripe_payment_intent_id: typeof session.payment_intent === 'string' 
@@ -96,6 +126,8 @@ export async function GET(request: NextRequest) {
         customer_email: customerEmail,
         customer_name: customerName,
         customer_phone: customerPhone,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }])
       .select()
       .single();
@@ -103,7 +135,7 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error('Error saving order to database:', error);
       return NextResponse.json(
-        { error: 'Failed to save order' },
+        { error: `Failed to save order: ${error.message}` },
         { status: 500 }
       );
     }
@@ -119,9 +151,18 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error verifying checkout session:', error);
+    
+    // Check if it's a Stripe error with a specific message
+    if (error instanceof Stripe.errors.StripeError) {
+      return NextResponse.json(
+        { error: `Stripe error: ${error.message}` },
+        { status: error.statusCode || 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to verify checkout session' },
       { status: 500 }
     );
   }
-} 
+}

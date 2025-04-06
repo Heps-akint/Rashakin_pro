@@ -1,27 +1,16 @@
-"use client";
-
 import React from 'react';
 import Link from 'next/link';
-import supabase from './lib/supabase';
 import { Product } from './lib/types';
 import NewArrivalProductCard from './components/NewArrivalProductCard';
-import { useCart } from './lib/cart-context';
+import NewsletterSection from './components/NewsletterSection';
+import { getNewestProducts } from './lib/actions/productActions';
 
-// The component is now async to fetch data on the server
+/**
+ * Server component that properly fetches data on the server
+ */
 export default async function HomePage() {
-  const { addItem } = useCart();
-
-  // Fetch the 4 newest products from Supabase
-  const { data: newArrivals, error } = await supabase
-    .from('products')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(4);
-
-  if (error) {
-    console.error('Error fetching new arrivals:', error);
-    // Handle error appropriately, maybe show a message to the user
-  }
+  // Fetch the 4 newest products using the server action
+  const newArrivals = await getNewestProducts(4);
 
   // Sample data for Featured Categories - keep static for now
   const featuredCategories = [
@@ -83,15 +72,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* New Arrivals - Now uses fetched data and the client component */}
+      {/* New Arrivals - Uses client component that handles add-to-cart functionality */}
       <section className="py-20 bg-gray-50">
         <div className="container-padded">
           <h2 className="text-3xl font-serif font-bold text-center mb-3">Spring Collection 2025</h2>
           <p className="text-center text-gray-600 mb-10 max-w-2xl mx-auto">Introducing our latest designs that capture the essence of the season</p>
           {newArrivals && newArrivals.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {newArrivals.map((product) => (
-                // Use the new client component for each product card
+              {newArrivals.map((product: Product) => (
                 <NewArrivalProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -133,23 +121,8 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="py-20 bg-gradient-to-br from-primary/10 to-secondary/10">
-        <div className="container-padded max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl font-serif font-bold mb-6">Stay Updated</h2>
-          <p className="text-lg text-gray-700 mb-8">Be the first to know about new arrivals, exclusive offers, and style inspiration.</p>
-          {/* TODO: Implement actual newsletter signup logic */}
-          <form className="flex flex-col sm:flex-row justify-center gap-4 max-w-lg mx-auto">
-            <input 
-              type="email" 
-              placeholder="Enter your email address" 
-              className="input input-bordered flex-grow px-4 py-3" 
-              required 
-            />
-            <button type="submit" className="btn btn-primary px-8 py-3">Subscribe</button>
-          </form>
-        </div>
-      </section>
+      {/* Newsletter - Client component for form handling */}
+      <NewsletterSection />
     </main>
   );
 }

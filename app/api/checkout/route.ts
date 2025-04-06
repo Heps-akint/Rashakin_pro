@@ -2,11 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { CartItem } from '@/app/lib/types';
 
-// Initialize Stripe with the secret key
+// Initialize Stripe with the secret key and proper typing
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2022-11-15',
 });
 
+/**
+ * Creates a Stripe checkout session for the provided cart items
+ * 
+ * @param request Request containing cart items and customer details
+ * @returns Response with Stripe session ID and checkout URL
+ */
 export async function POST(request: NextRequest) {
   try {
     const { items, customerDetails } = await request.json();
@@ -18,13 +24,17 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Get base URL from env or request
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 
+      `${request.nextUrl.protocol}//${request.nextUrl.host}`;
+    
     // Create a list of line items for Stripe
     const lineItems = items.map((item: CartItem) => {
       // Convert relative image path to absolute URL
       const imageUrl = item.image 
         ? item.image.startsWith('http') 
           ? item.image 
-          : `${process.env.NEXT_PUBLIC_BASE_URL}${item.image}` 
+          : `${baseUrl}${item.image.startsWith('/') ? '' : '/'}${item.image}` 
         : null;
 
       // Format variant information
@@ -54,8 +64,8 @@ export async function POST(request: NextRequest) {
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_BASE_URL}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_BASE_URL}/cart`,
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/cart`,
       shipping_address_collection: {
         allowed_countries: ['GB'], // UK only for now
       },
@@ -112,6 +122,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ sessionId: session.id, url: session.url });
   } catch (error) {
     console.error('Error creating checkout session:', error);
+    
+    // Check if it's a Stripe error with a specific message
+    if (error instanceof Stripe.errors.StripeError) {
+      return NextResponse.json(
+        { error: `Stripe error: ${error.message}` },
+        { status: error.statusCode || 500 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to create checkout session' },
       { status: 500 }
