@@ -67,11 +67,13 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
           {/* Product images */}
           <div className="space-y-4">
             {/* Main image */}
-            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
+            <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
               {product.images && product.images.length > 0 ? (
-                <div
-                  className="w-full h-full bg-center bg-cover"
-                  style={{ backgroundImage: `url(${product.images[0]})` }}
+                <Image
+                  src={product.images[0]}
+                  alt={`Image of ${product.name}`}
+                  fill
+                  className="object-cover"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400">
@@ -84,13 +86,15 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
             {product.images && product.images.length > 1 && (
               <div className="grid grid-cols-4 gap-2">
                 {product.images.map((image: string, index: number) => (
-                  <div 
-                    key={index} 
-                    className="aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer"
+                  <div
+                    key={index}
+                    className="aspect-square bg-gray-100 rounded-md overflow-hidden cursor-pointer relative"
                   >
-                    <div
-                      className="w-full h-full bg-center bg-cover"
-                      style={{ backgroundImage: `url(${image})` }}
+                    <Image
+                      src={image}
+                      alt={`Thumbnail ${index + 1} of ${product.name}`}
+                      fill
+                      className="object-cover"
                     />
                   </div>
                 ))}

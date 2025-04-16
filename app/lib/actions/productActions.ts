@@ -2,13 +2,14 @@
 
 import { createClient } from '@/app/lib/supabase/server';
 import { Product } from '@/app/lib/types';
+import { cache } from 'react';
 
 /**
  * Fetches the newest products from the database
  * @param limit Number of products to fetch
  * @returns Array of products or empty array if error occurs
  */
-export async function getNewestProducts(limit: number = 4): Promise<Product[]> {
+export const getNewestProducts = cache(async (limit: number = 4): Promise<Product[]> => {
   try {
     const supabase = createClient();
     
@@ -28,14 +29,14 @@ export async function getNewestProducts(limit: number = 4): Promise<Product[]> {
     console.error('Error in getNewestProducts:', error);
     return [];
   }
-}
+});
 
 /**
  * Fetches a product by its ID
  * @param productId The ID of the product to fetch
  * @returns Product object or null if not found
  */
-export async function getProductById(productId: string): Promise<Product | null> {
+export const getProductById = cache(async (productId: string): Promise<Product | null> => {
   try {
     const supabase = createClient();
     
@@ -55,7 +56,7 @@ export async function getProductById(productId: string): Promise<Product | null>
     console.error('Error in getProductById:', error);
     return null;
   }
-}
+});
 
 /**
  * Fetches products by category
@@ -63,7 +64,7 @@ export async function getProductById(productId: string): Promise<Product | null>
  * @param limit Number of products to fetch
  * @returns Array of products or empty array if error occurs
  */
-export async function getProductsByCategory(category: string, limit: number = 8): Promise<Product[]> {
+export const getProductsByCategory = cache(async (category: string, limit: number = 8): Promise<Product[]> => {
   try {
     const supabase = createClient();
     
@@ -83,4 +84,4 @@ export async function getProductsByCategory(category: string, limit: number = 8)
     console.error('Error in getProductsByCategory:', error);
     return [];
   }
-}
+});

@@ -1,36 +1,32 @@
+// Bundle analyzer plugin configuration
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+});
+
 /** @type {import('next').NextConfig} */
+const { NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_BASE_URL } = process.env;
+const supabaseHost = NEXT_PUBLIC_SUPABASE_URL ? new URL(NEXT_PUBLIC_SUPABASE_URL).hostname : 'localhost';
+
 const nextConfig = {
-  // Server Actions still need to be enabled via experimental flag
   experimental: {
     serverActions: true, // Enable Server Actions
   },
-  
-  // Image optimization configuration
+
   images: {
-    domains: ['localhost'], // Allow images from localhost
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**', // Allow any HTTPS image source - can be restricted further for production
-      },
-      {
-        protocol: 'http',
-        hostname: 'localhost',
-      }
-    ],
+    domains: ['localhost', supabaseHost],
   },
-  
+
   // Improved output settings
-  output: 'standalone', // Optimizes for production deployments
-  
+  output: 'standalone',
+
   // Performance optimizations
-  swcMinify: true, // Use SWC for minification (faster than Terser)
-  
+  swcMinify: true,
+
   // Environment variable configuration
   env: {
-    // Fallback value for the base URL if not set in environment variables
-    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
+    NEXT_PUBLIC_BASE_URL: NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
   },
 };
 
-module.exports = nextConfig;
+// Export with bundle analyzer
+module.exports = withBundleAnalyzer(nextConfig);

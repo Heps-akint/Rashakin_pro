@@ -7,7 +7,9 @@ import Header from './components/Header';
 import Footer from './components/Footer';
 import { AuthProvider } from './lib/auth-context';
 import { CartProvider } from './lib/cart-context';
-import CartSidebar from './components/cart/CartSidebar';
+import dynamic from 'next/dynamic';
+// Dynamically import CartSidebar to reduce initial bundle size
+const CartSidebar = dynamic(() => import('./components/cart/CartSidebar'), { ssr: false });
 import { ToastContainer } from 'react-toastify'; // Import ToastContainer
 
 // Font configuration

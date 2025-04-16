@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import supabase from '@/app/lib/supabase';
-import { Order } from '@/app/lib/types';
+import { Order, OrderStatus } from '@/app/lib/types';
 import { 
   formatDate, 
   formatCurrency, 
@@ -20,7 +20,7 @@ export default function OrderDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(OrderStatus.Pending);
 
   useEffect(() => {
     fetchOrder();
@@ -174,7 +174,7 @@ export default function OrderDetailPage() {
             <div className="flex items-center">
               <select
                 value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
+                onChange={(e) => setSelectedStatus(e.target.value as OrderStatus)}
                 className="p-2 border border-gray-300 rounded mr-2 flex-grow"
                 disabled={isUpdating}
               >

@@ -1,9 +1,9 @@
 'use server'; // Mark this module as containing Server Actions
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
+import { cache } from 'react';
 import { createClient } from '@/app/lib/supabase/server'; // Use the server client
 import { Product } from '@/app/lib/types'; // Import Product type
-import { PostgrestSingleResponse } from '@supabase/supabase-js'; // Import the specific response type
 
 /**
  * Interface for a wishlist item joined with product details
@@ -30,7 +30,7 @@ export interface WishlistResponse<T> {
  * 
  * @returns Array of wishlist items with joined product details
  */
-export async function getWishlistItems(): Promise<WishlistResponse<WishlistItemWithProduct[]>> {
+export const getWishlistItems = cache(async function getWishlistItems(): Promise<WishlistResponse<WishlistItemWithProduct[]>> {
   const supabase = createClient();
 
   try {
@@ -47,14 +47,14 @@ export async function getWishlistItems(): Promise<WishlistResponse<WishlistItemW
     }
 
     // 2. Fetch wishlist items and explicitly select joined product columns
-    const response: PostgrestSingleResponse<WishlistItemWithProduct[]> = await supabase
+    const response = await supabase
       .from('wishlist_items')
       .select(`
         id,
         customer_id,
         product_id,
         added_at,
-        products ( id, name, price, images, sizes, colors, stock_quantity, category, tags ) 
+        products ( id, name, description, price, images, sizes, colors, stock_quantity, category, tags, created_at, updated_at ) 
       `)
       .eq('customer_id', user.id)
       .order('added_at', { ascending: false });
@@ -68,10 +68,18 @@ export async function getWishlistItems(): Promise<WishlistResponse<WishlistItemW
       };
     }
 
-    return { 
-      success: true, 
-      data: response.data || [] 
-    };
+    // Transform products array into single Product or null
+    const rawItems = response.data || [];
+    const items: WishlistItemWithProduct[] = rawItems.map(item => ({
+      id: item.id,
+      customer_id: item.customer_id,
+      product_id: item.product_id,
+      added_at: item.added_at,
+      products: Array.isArray(item.products) && item.products.length > 0
+        ? item.products[0]
+        : null
+    }));
+    return { success: true, data: items };
   } catch (error) {
     console.error('Unexpected error fetching wishlist:', error);
     return { 
@@ -80,7 +88,7 @@ export async function getWishlistItems(): Promise<WishlistResponse<WishlistItemW
       data: [] 
     };
   }
-}
+});
 
 /**
  * Adds a product to the user's wishlist
@@ -117,6 +125,7 @@ export async function addWishlistItem(productId: number): Promise<WishlistRespon
 
     // 3. Revalidate the wishlist page path so it shows the new item
     revalidatePath('/account/wishlist');
+    revalidateTag('wishlist');
 
     return { success: true };
   } catch (error) {
@@ -158,6 +167,7 @@ export async function removeWishlistItem(wishlistItemId: number): Promise<Wishli
 
     // 3. Revalidate the wishlist page path
     revalidatePath('/account/wishlist');
+    revalidateTag('wishlist');
 
     return { success: true };
   } catch (error) {

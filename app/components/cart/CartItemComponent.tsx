@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useCart } from '@/app/lib/cart-context';
 import { CartItem } from '@/app/lib/types';
 
@@ -40,11 +41,14 @@ const CartItemComponent: React.FC<CartItemComponentProps> = ({ item }) => {
       <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded overflow-hidden">
         <Link href={`/products/${item.id}`}>
           {item.image ? (
-            <div 
-              className="w-full h-full bg-center bg-cover" 
-              style={{ backgroundImage: `url(${item.image})` }}
-              aria-label={`Product image of ${item.name}`}
-            />
+            <div className="relative w-full h-full">
+              <Image
+                src={item.image}
+                alt={`Product image of ${item.name}`}
+                fill
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200 text-gray-400 text-xs">
               No Image

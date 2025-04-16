@@ -20,8 +20,13 @@ export default function WishlistPage() {
       setIsLoading(true); 
       setError(null); 
       getWishlistItems()
-        .then(items => {
-          setWishlistItems(items);
+        .then(res => {
+          if (res.success) {
+            setWishlistItems(res.data || []);
+          } else {
+            console.error('Wishlist fetch error:', res.error);
+            setError(res.error || 'Failed to load your wishlist. Please try again later.');
+          }
         })
         .catch(err => {
           console.error("Wishlist fetch error:", err);

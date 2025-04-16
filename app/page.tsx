@@ -2,12 +2,17 @@ import React from 'react';
 import Link from 'next/link';
 import { Product } from './lib/types';
 import NewArrivalProductCard from './components/NewArrivalProductCard';
-import NewsletterSection from './components/NewsletterSection';
+import dynamicImport from 'next/dynamic';
+// Dynamically import newsletter section to defer heavy form logic
+const NewsletterSection = dynamicImport(() => import('./components/NewsletterSection'), { ssr: false });
 import { getNewestProducts } from './lib/actions/productActions';
 
 /**
  * Server component that properly fetches data on the server
  */
+// Force server-side rendering due to dynamic Supabase usage
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   // Fetch the 4 newest products using the server action
   const newArrivals = await getNewestProducts(4);

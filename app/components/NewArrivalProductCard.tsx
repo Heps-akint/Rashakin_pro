@@ -3,6 +3,7 @@
 import React from 'react';
 import { useCart } from '../lib/cart-context';
 import { Product } from '../lib/types';
+import Image from 'next/image';
 
 interface NewArrivalProductCardProps {
   product: Product;
@@ -28,10 +29,11 @@ export default function NewArrivalProductCard({ product }: NewArrivalProductCard
     <div className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300">
       <div className="aspect-[4/5] bg-gray-100 relative overflow-hidden">
         {product.images?.[0] ? (
-          <div 
-            className="absolute inset-0 bg-center bg-cover transition-transform duration-300 group-hover:scale-105"
-            style={{ backgroundImage: `url(${product.images[0]})` }}
-            aria-label={`Image of ${product.name}`}
+          <Image
+            src={product.images[0]}
+            alt={`Image of ${product.name}`}
+            fill
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-xs">No Image</div>
