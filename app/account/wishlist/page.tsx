@@ -22,7 +22,10 @@ export default function WishlistPage() {
       getWishlistItems()
         .then(res => {
           if (res.success) {
-            setWishlistItems(res.data || []);
+            const items = res.data || [];
+            // only show items with product data
+            const validItems = items.filter(item => item.products !== null);
+            setWishlistItems(validItems);
           } else {
             console.error('Wishlist fetch error:', res.error);
             setError(res.error || 'Failed to load your wishlist. Please try again later.');
@@ -115,20 +118,7 @@ export default function WishlistPage() {
           const product = item.products;
           const isCurrentlyRemoving = removingItemId === item.id && isPendingRemove;
 
-          if (!product) {
-            return (
-              <li key={item.id} className="border p-4 rounded-md bg-red-50 text-red-700">
-                Error: Product details not found for item ID {item.product_id}.
-                <button
-                  onClick={() => handleRemoveItem(item.id)}
-                  disabled={isCurrentlyRemoving}
-                  className={`ml-4 text-xs text-red-600 hover:text-red-800 ${isCurrentlyRemoving ? 'opacity-50' : ''}`}
-                >
-                  (Remove anyway)
-                </button>
-              </li>
-            );
-          }
+          if (!product) return null;
 
           const imageUrl = product.images?.[0] || '/placeholder.png';
 
